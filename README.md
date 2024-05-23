@@ -30,7 +30,7 @@ docker-compose up -d
 ```
 ####
 Once everything starts, check on http://localhost:9082/ to get the cluster state and:
-- create the subject "com.demo.schema.TestPayload" into the schema registry using the management window ("Create a Subject" button on the right-hand bottom corner and paste the "test-schema.avsc" content)
+- create the subject "com.demo.schema.TestPayload" into the schema registry using the management window ("Create a Subject" button on the right-hand bottom corner and paste the "test-payload.avsc" content)
 - create the topic "test-topic" using the management window ("Create a topic" button)
 ####
 To stop the local stack:
