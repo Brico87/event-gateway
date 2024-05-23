@@ -1,0 +1,15 @@
+{
+    "type": "record",
+    "name": "TestPayload",
+    "namespace": "com.demo.schema",
+    "fields": [
+        {
+            "name": "id",
+            "type": "int"
+        },
+        {
+            "name": "data",
+            "type": "string"
+        }
+    ]
+}
