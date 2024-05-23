@@ -1,0 +1,61 @@
+version: '2'
+services:
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:2092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_LISTENERS: 'INTERNAL://kafka:29092,CONTROLLER://kafka:29093,EXTERNAL://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka:29092,EXTERNAL://localhost:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      CLUSTER_ID: 'ciWo7IWazngRchmPES6q5A=='
+      #KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+    restart: always
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:latest
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      - kafka
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8081
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      SCHEMA_REGISTRY_DEBUG: 'true'
+
+  akhq:
+    image: tchiotludo/akhq
+    container_name: akhq
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka:29092"
+              schema-registry:
+                url: "http://schema-registry:8081"
+    ports:
+      - 9082:8080
+
+networks:
+  default:
+    external: true
+    name: event-gateway
