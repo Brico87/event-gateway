@@ -28,7 +28,11 @@ public class EventProducerController {
                                                        @RequestBody String eventData) {
         try {
             String clientId = "1111"; // GET CLIENT ID FROM HEADER/COOKIE ?
+
+            // We could store the event in a internal LinkedBlockingQueue as a String (or in a "technical" Kafka topic)
+            // and then answer right away to the customer with an OK status saying "will be sent"
             service.send(buildUniqueKey(clientId), eventName, eventData);
+
             return ResponseEntity.ok("Sent");
         } catch (Exception e) {
             LOGGER.error("Error while sending event", e);

@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class EventProducerConfiguration {
 
-    @Value("${spring.cloud.stream.kafka.binder.producer-properties.schema.registry.url}")
+    @Value("${schema-registry-url}")
     private String endPoint;
 
     @Bean
