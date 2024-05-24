@@ -33,7 +33,7 @@ public class EventProducerController {
             // and then answer right away to the customer with an OK status saying "will be sent"
             service.send(buildUniqueKey(clientId), eventName, eventData);
 
-            return ResponseEntity.ok("Sent");
+            return ResponseEntity.accepted().build();
         } catch (Exception e) {
             LOGGER.error("Error while sending event", e);
             return ResponseEntity.internalServerError().body("Error");

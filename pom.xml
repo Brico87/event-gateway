@@ -10,5 +10,6 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>event-producer</module>
-	</modules>
+        <module>event-consumer</module>
+    </modules>
 </project>
