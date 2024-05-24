@@ -1,25 +1,13 @@
-schema-registry-url: http://localhost:8081
-
-event-producer:
-    binding-name: output
-
 spring:
     application:
         name: event-producer
-    cloud:
-        stream:
-            default:
-                producer:
-                    useNativeEncoding: true
-            bindings:
-                output:
-                    destination: test-topic
-                    content-type: application/*+avro
-            kafka:
-                binder:
-                    producer-properties:
-                        key.serializer: org.apache.kafka.common.serialization.StringSerializer
-                        value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
-                        schema.registry.url: ${schema-registry-url}
-                        auto.register.schemas: false
-                        value.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
+    data:
+      redis:
+        database: 0
+        host: localhost
+        port: 6379
+        timeout: 60000
+        #password: mypass
+kafka:
+    bootstrap-servers: localhost:9092
+    schema-registry-url: http://localhost:8081

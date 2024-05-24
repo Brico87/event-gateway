@@ -1,3 +1,10 @@
 package com.demo.eventconsumer.model;
 
-public record EventSubscriptionModel(String event, String topic, String callbackUrl) {}
+
+import org.springframework.data.redis.core.RedisHash;
+
+import java.util.List;
+
+// "id" is the topic name
+@RedisHash("EventSubscription")
+public record EventSubscriptionModel(String id, List<String> callbackUrls) {}

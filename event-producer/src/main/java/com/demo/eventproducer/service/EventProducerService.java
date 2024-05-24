@@ -1,5 +1,6 @@
 package com.demo.eventproducer.service;
 
+import com.demo.eventproducer.model.EventSchemaModel;
 import com.demo.eventproducer.repository.EventSchemaRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -7,13 +8,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.cloud.stream.schema.client.SchemaRegistryClient;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -21,41 +22,40 @@ import java.util.Map;
 @Service
 public class EventProducerService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventProducerService.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private final StreamBridge streamBridge;
+    private final KafkaProducer<String, GenericRecord> kafkaProducer;
     private final SchemaRegistryClient schemaRegistryClient;
     private final EventSchemaRepository eventSchemaRepository;
-    private final String bindingName;
 
     @Autowired
-    public EventProducerService(StreamBridge streamBridge,
+    public EventProducerService(KafkaProducer<String, GenericRecord> kafkaProducer,
                                 SchemaRegistryClient schemaRegistryClient,
-                                EventSchemaRepository eventSchemaRepository,
-                                @Value("${event-producer.binding-name}") String bindingName) {
-        // POSSIBILITY TO HAVE ASYNC OPS USING .setAsync(true)
-        // Ref: https://docs.spring.io/spring-cloud-stream/reference/spring-cloud-stream/producing-and-consuming-messages.html#_streambridge_with_async_send
-        this.streamBridge = streamBridge;
+                                EventSchemaRepository eventSchemaRepository) {
+        this.kafkaProducer = kafkaProducer;
         this.schemaRegistryClient = schemaRegistryClient;
         this.eventSchemaRepository = eventSchemaRepository;
-        this.bindingName = bindingName;
     }
 
     public void send(String messageKey, String eventName, String eventData) throws JsonProcessingException {
-        String schemaDefinition = fetchSchemaDefinition(eventName);
+        EventSchemaModel mapping = fetchEventSchemaMapping(eventName);
+        String schemaDefinition = fetchSchemaDefinition(mapping.schemaId());
         GenericRecord genericRecord = buildGenericRecord(eventData, schemaDefinition);
-        Message<GenericRecord> message = buildStreamMessage(messageKey, genericRecord);
-        streamBridge.send(bindingName, message);
+        sendEvent(mapping.topicName(), messageKey, genericRecord);
+    }
+
+    public void register(String eventName, int schemaId, String topicName) {
+        eventSchemaRepository.save(new EventSchemaModel(eventName, schemaId, topicName));
     }
 
     // PRIVATE METHODS
 
-    private String fetchSchemaDefinition(String eventName) {
-        int schemaId = fetchEventSchemaId(eventName);
+    private String fetchSchemaDefinition(int schemaId) {
         return schemaRegistryClient.fetch(schemaId);
     }
 
-    private int fetchEventSchemaId(String eventName) {
-        return eventSchemaRepository.fetchSchemaIdByEventName(eventName)
+    private EventSchemaModel fetchEventSchemaMapping(String eventName) {
+        return eventSchemaRepository.findById(eventName)
                 .orElseThrow(() -> new IllegalArgumentException("Event '" + eventName + "' not known in database"));
     }
 
@@ -68,9 +68,14 @@ public class EventProducerService {
         return genericRecord;
     }
 
-    private static Message<GenericRecord> buildStreamMessage(String messageKey, GenericRecord genericRecord) {
-        return MessageBuilder.withPayload(genericRecord)
-                .setHeader(KafkaHeaders.KEY, messageKey) // KEY FORMAT TO DEFINE: USE AVRO SCHEMA ?
-                .build();
+    private void sendEvent(String topicName, String messageKey, GenericRecord genericRecord) {
+        ProducerRecord<String, GenericRecord> record = new ProducerRecord<>(topicName, messageKey, genericRecord);
+        try {
+            kafkaProducer.send(record);
+        } catch (Exception e) {
+            LOGGER.error("Error while sending event on topic '{}'", topicName, e);
+        } finally {
+            kafkaProducer.flush();
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.demo.eventproducer.controller;
 
+import com.demo.eventproducer.repository.EventSchemaRepository;
 import com.demo.eventproducer.service.EventProducerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,19 @@ public class EventProducerController {
             return ResponseEntity.accepted().build();
         } catch (Exception e) {
             LOGGER.error("Error while sending event", e);
+            return ResponseEntity.internalServerError().body("Error");
+        }
+    }
+
+    @PostMapping("/mapping/{eventName}/{topicName}/{schemaId}")
+    public ResponseEntity<String> registerEventSchemaMapping(@PathVariable String eventName,
+                                                             @PathVariable String topicName,
+                                                             @PathVariable int schemaId) {
+        try {
+            service.register(eventName, schemaId, topicName);
+            return ResponseEntity.accepted().build();
+        } catch (Exception e) {
+            LOGGER.error("Error while saving event/schema mapping", e);
             return ResponseEntity.internalServerError().body("Error");
         }
     }
