@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/subscription")
 public class EventSubscriptionController {
@@ -19,6 +21,15 @@ public class EventSubscriptionController {
     @Autowired
     public EventSubscriptionController(EventSubscriptionRepository repository) {
         this.repository = repository;
+    }
+
+    @GetMapping("/callback/{eventName}")
+    public ResponseEntity<List<String>> getSubscriptions(@PathVariable String eventName) {
+        List<String> callbackUrls = repository.getSubscriptionsForEvent(eventName)
+                .stream()
+                .map(EventSubscriptionModel::callbackUrl)
+                .toList();
+        return ResponseEntity.ok(callbackUrls);
     }
 
     @PostMapping("/{eventName}/{topicName}")

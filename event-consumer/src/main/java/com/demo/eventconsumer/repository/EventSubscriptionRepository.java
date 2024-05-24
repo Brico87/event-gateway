@@ -21,6 +21,12 @@ public class EventSubscriptionRepository {
         subscriptions.add(subscription);
     }
 
+    public List<EventSubscriptionModel> getSubscriptionsForEvent(String eventName) {
+        return subscriptions.stream()
+                .filter(subscription -> eventName.equalsIgnoreCase(subscription.event()))
+                .toList();
+    }
+
     public List<EventSubscriptionModel> getSubscriptionsForTopic(String topicName) {
         return subscriptions.stream()
                 .filter(subscription -> topicName.equalsIgnoreCase(subscription.topic()))
