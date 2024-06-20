@@ -23,19 +23,16 @@ services:
     restart: always
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:latest
+    image: apicurio/apicurio-registry-mem:2.5.11.Final
     hostname: schema-registry
     container_name: schema-registry
     depends_on:
       - kafka
     restart: always
     ports:
-      - "8081:8081"
+      - "8080:8080"
     environment:
-      SCHEMA_REGISTRY_HOST_NAME: schema-registry
-      SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8081
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-      SCHEMA_REGISTRY_DEBUG: 'true'
+       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
 
   akhq:
     image: tchiotludo/akhq
@@ -51,12 +48,13 @@ services:
               properties:
                 bootstrap.servers: "kafka:29092"
               schema-registry:
-                url: "http://schema-registry:8081"
+                url: "http://schema-registry:8080/apis"
     ports:
       - 9082:8080
 
-  cache:
+  database:
     image: redis:7-alpine
+    container_name: database
     restart: always
     ports:
       - '6379:6379'
