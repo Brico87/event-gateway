@@ -1,0 +1,29 @@
+{
+  "components": {
+    "schemas": {
+      "DiagnostiqueRealise": {
+        "type": "object",
+        "properties": {
+          "identifiantUsager": {
+            "type": "string",
+            "description": "Identifiant usager"
+          },
+          "identifiantDiagnostique": {
+            "type": "string",
+            "description": "Identifiant du diagnostique"
+          },
+          "horodatage": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date/heure du diagnostique réalisé"
+          }
+        },
+        "required": [
+          "identifiantUsager",
+          "identifiantDiagnostique",
+          "horodatage"
+        ]
+      }
+    }
+  }
+}
