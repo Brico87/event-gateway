@@ -1,0 +1,52 @@
+openapi: 3.1.0
+info:
+  title: API notification diagnostique
+  description: Endpoints serveur pour la notification lors de changement d'état de diagnostiques
+  version: 1.0.0
+paths:
+  /notification/diagnostique-realise:
+    post:
+      summary: Réception de la notification "Diagnostique réalisé"
+      description: Endpoint serveur pour réception de la notification de changement d'état du diagnostique
+      requestBody:
+        description: Notification de diagnostique réalisé
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: 'DiagnostiqueRealise.yaml#/components/schemas/DiagnostiqueRealise'
+      responses:
+        '204':
+          description: Notification "Diagnostique réalisé" transmise
+        '400':
+          description: Notification transmise invalide
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: Code d'erreur
+                  message:
+                    type: string
+                    description: Message d'erreur
+                required:
+                  - code
+                  - message
+        '500':
+          description: Erreur interne serveur
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    description: Code d'erreur
+                  message:
+                    type: string
+                    description: Message d'erreur
+                required:
+                  - code
+                  - message
