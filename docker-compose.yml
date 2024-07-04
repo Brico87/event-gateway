@@ -48,7 +48,7 @@ services:
               properties:
                 bootstrap.servers: "kafka:29092"
               schema-registry:
-                url: "http://schema-registry:8080/apis"
+                url: "http://schema-registry:8080/apis/ccompat/v7"
     ports:
       - 9082:8080
 
