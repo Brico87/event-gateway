@@ -1,0 +1,34 @@
+server:
+  port: 8085
+
+logging:
+  level:
+    org:
+      springframework:
+        cloud: INFO
+        integration: INFO
+
+spring:
+  application:
+    name: event-fanout
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+          producer-properties:
+            key.serializer: "org.apache.kafka.common.serialization.StringSerializer"
+        bindings:
+          stream-processor-in-0.consumer.configuration.value.deserializer: org.apache.kafka.common.serialization.StringSerializer
+          stream-processor-out-0.producer.configuration.value.serializer: org.apache.kafka.common.serialization.StringSerializer
+      bindings:
+        stream-processor-in-0.destination: all_topic
+        stream-processor-out-0.destination: event1_topic
+        stream-processor-out-1.destination: event2_topic
+        stream-processor-out-2.destination: notification_topic_dlq
+        event1-in-0.destination: event1_topic
+        event1-in-0.group: event1
+        event2-in-0.destination: event2_topic
+        event2-in-0.group: event2
+    function:
+      definition: stream-processor;event1;event2
