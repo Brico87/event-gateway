@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 public class EventReaderController {
 
-    public record EventReadRequest(String clientName, String eventName, int eventCount) {}
+    public record EventReadRequest(String clientName, String eventName, Long timestamp, int count) {}
     public record EventReadResponse(int count, List<EventPayloadModel> data) {}
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventReaderController.class);
@@ -29,8 +29,8 @@ public class EventReaderController {
     public ResponseEntity<EventReadResponse> readEvents(@RequestBody EventReadRequest readRequest) {
         try {
             String consumerGroupId = readRequest.clientName + "_" + readRequest.eventName;
-            List<EventPayloadModel> res = eventReaderService.readEvents(consumerGroupId, "test-topic", readRequest.eventCount);
-            return ResponseEntity.ok(new EventReadResponse(res.size(), res));
+            EventReaderService.EventPaginationResult res = eventReaderService.readEvents(consumerGroupId, "test-topic", readRequest.timestamp, readRequest.count);
+            return ResponseEntity.ok(new EventReadResponse(res.data().size(), res.data()));
         } catch (Exception e) {
             LOGGER.error("Error while reading events from stream '{}'", readRequest.eventName, e);
             return ResponseEntity.internalServerError().build();

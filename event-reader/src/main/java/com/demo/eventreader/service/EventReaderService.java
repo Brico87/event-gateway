@@ -5,10 +5,8 @@ import com.demo.eventreader.service.factory.KafkaConsumerFactory;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.clients.consumer.*;
+import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +19,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class EventReaderService {
+
+    public record EventPaginationResult(List<EventPayloadModel> data) {}
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventReaderService.class);
     private static final long READ_TIMEOUT_MS = 10000; // 10 seconds to fetch all reads
@@ -37,21 +38,47 @@ public class EventReaderService {
     }
 
     // TODO: topic name information must come from a DB
-    public List<EventPayloadModel> readEvents(String consumerGroupId, String topic, int numberOfEventsToRead) {
-        List<EventPayloadModel> res = new ArrayList<>();
+    public EventPaginationResult readEvents(String consumerGroupId, String topic, Long timestamp, int numberOfEventsToRead) {
+        EventPaginationResult res = new EventPaginationResult(new ArrayList<>());
         try (KafkaConsumer<String, GenericRecord> kafkaConsumer = consumerFactory.buildKafkaListener(consumerGroupId)) {
-            kafkaConsumer.subscribe(List.of(topic));
+            configureKafkaConsumer(kafkaConsumer, topic, timestamp);
             res = readEvents(kafkaConsumer, numberOfEventsToRead);
             kafkaConsumer.unsubscribe();
         } catch (Exception e) {
-            LOGGER.error("Error while reading events for '{}' on topic '{}'", consumerGroupId, topic);
+            LOGGER.error("Error while reading events for '{}' on topic '{}'", consumerGroupId, topic, e);
         }
         return res;
     }
 
     // PRIVATE METHODS
 
-    private List<EventPayloadModel> readEvents(KafkaConsumer<String, GenericRecord> kafkaConsumer, int numberOfEventsToRead) {
+    private static void configureKafkaConsumer(KafkaConsumer<String, GenericRecord> kafkaConsumer, String topic, Long timestamp) {
+        if (timestamp != null && timestamp < System.currentTimeMillis()) {
+            configureKafkaConsumerUsingTimestamp(kafkaConsumer, topic, timestamp);
+        } else {
+            kafkaConsumer.subscribe(List.of(topic));
+        }
+    }
+
+    private static void configureKafkaConsumerUsingTimestamp(KafkaConsumer<String, GenericRecord> kafkaConsumer, String topic, Long timestamp) {
+        // Get the list of partitions
+        List<PartitionInfo> partitionInfos = kafkaConsumer.partitionsFor(topic);
+        // Transform PartitionInfo into TopicPartition
+        List<TopicPartition> topicPartitionList = partitionInfos
+                .stream()
+                .map(info -> new TopicPartition(topic, info.partition()))
+                .toList();
+        // Assign the consumer to these partitions
+        kafkaConsumer.assign(topicPartitionList);
+        // Look for offsets based on timestamp
+        Map<TopicPartition, Long> partitionTimestampMap = topicPartitionList.stream()
+                .collect(Collectors.toMap(tp -> tp, tp -> timestamp));
+        Map<TopicPartition, OffsetAndTimestamp> partitionOffsetMap = kafkaConsumer.offsetsForTimes(partitionTimestampMap);
+        // Force the consumer to seek for those offsets
+        partitionOffsetMap.forEach((tp, offsetAndTimestamp) -> kafkaConsumer.seek(tp, offsetAndTimestamp.offset()));
+    }
+
+    private static EventPaginationResult readEvents(KafkaConsumer<String, GenericRecord> kafkaConsumer, int numberOfEventsToRead) {
         List<EventPayloadModel> res = new ArrayList<>();
         int numberOfEventsReadSoFar = 0;
         StopWatch stopWatch = StopWatch.createStarted();
@@ -76,14 +103,14 @@ public class EventReaderService {
 
         LOGGER.info("Events read: {} in {} sec", numberOfEventsReadSoFar, stopWatch.getTime(TimeUnit.SECONDS));
 
-
-        return res;
+        return new EventPaginationResult(res);
     }
 
-    private Map<String, Object> convertToMap(GenericRecord genericRecord) {
-        Map<String, Object> values = new HashMap<>();
+    private static Map<String, String> convertToMap(GenericRecord genericRecord) {
+        Map<String, String> values = new HashMap<>();
         for (Schema.Field field : genericRecord.getSchema().getFields()) {
-            values.put(field.name(), genericRecord.get(field.name()));
+            String value = genericRecord.get(field.name()).toString();
+            values.put(field.name(), value);
         }
         return values;
     }
