@@ -88,7 +88,7 @@ public class EventReaderService {
         while (numberOfEventsReadSoFar < numberOfEventsToRead && stopWatch.getTime(TimeUnit.MILLISECONDS) < READ_TIMEOUT_MS) {
             ConsumerRecords<String, GenericRecord> records = kafkaConsumer.poll(Duration.ofMillis(KAFKA_POLL_TIMEOUT_MS));
             for (ConsumerRecord<String, GenericRecord> record : records) {
-                LOGGER.info("Key: {}, partition: {}, offset: {}", record.key(), record.partition(), record.offset());
+                LOGGER.debug("Key: {}, partition: {}, offset: {}", record.key(), record.partition(), record.offset());
                 res.add(new EventPayloadModel(convertToMap(record.value())));
                 currentOffsets.put(new TopicPartition(record.topic(), record.partition()), new OffsetAndMetadata(record.offset() + 1));
                 numberOfEventsReadSoFar++;
@@ -101,7 +101,7 @@ public class EventReaderService {
 
         stopWatch.stop();
 
-        LOGGER.info("Events read: {} in {} sec", numberOfEventsReadSoFar, stopWatch.getTime(TimeUnit.SECONDS));
+        LOGGER.debug("Events read: {} in {} sec", numberOfEventsReadSoFar, stopWatch.getTime(TimeUnit.SECONDS));
 
         return new EventPaginationResult(res);
     }

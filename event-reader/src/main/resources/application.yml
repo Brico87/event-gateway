@@ -8,3 +8,12 @@ server:
 kafka:
   bootstrap-servers: localhost:9092
   schema-registry-url: http://localhost:8081
+
+logging:
+  level:
+    org:
+      apache:
+        kafka: warn
+    io:
+      confluent:
+        kafka: warn
