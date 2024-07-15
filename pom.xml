@@ -11,5 +11,7 @@
 	<modules>
 		<module>event-producer</module>
         <module>event-consumer</module>
-    </modules>
+		<module>event-reader</module>
+		<module>event-fanout</module>
+	</modules>
 </project>
