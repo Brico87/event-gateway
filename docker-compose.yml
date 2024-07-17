@@ -37,6 +37,18 @@ services:
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
       SCHEMA_REGISTRY_DEBUG: 'true'
 
+  event-registry:
+    image: apicurio/apicurio-registry-mem:2.5.11.Final
+    hostname: event-registry
+    container_name: event-registry
+    depends_on:
+      - kafka
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
   akhq:
     image: tchiotludo/akhq
     container_name: akhq
