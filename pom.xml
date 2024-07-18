@@ -13,5 +13,6 @@
         <module>event-consumer</module>
 		<module>event-reader</module>
 		<module>event-fanout</module>
-	</modules>
+        <module>event-registry</module>
+    </modules>
 </project>

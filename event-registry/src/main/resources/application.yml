@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: event-registry
+
+server:
+  port: 8084
+
+kafka:
+  bootstrap-servers: localhost:9092
+  schema-registry-url: http://localhost:8081
+
+logging:
+  level:
+    org:
+      apache:
+        kafka: warn
+    io:
+      confluent:
+        kafka: warn

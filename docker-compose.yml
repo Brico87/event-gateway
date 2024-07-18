@@ -41,8 +41,6 @@ services:
     image: apicurio/apicurio-registry-mem:2.5.11.Final
     hostname: event-registry
     container_name: event-registry
-    depends_on:
-      - kafka
     restart: always
     ports:
       - "8080:8080"

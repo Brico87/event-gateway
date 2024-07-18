@@ -1,0 +1,20 @@
+asyncapi: 2.0.0
+info:
+  title: Test payload contract
+  version: 1.0.0
+  description: The API notifies you whenever a new test event is fired
+channels:
+  my.super.topic:
+    subscribe:
+      operationId: emitTestPayloadEvent
+      message:
+        schemaFormat: 'application/vnd.apache.avro;version=1.9.0'
+        payload:
+          $ref: 'https://raw.githubusercontent.com/Brico87/event-gateway/main/test-payload.avsc'
+  my.second.super.topic:
+    subscribe:
+      operationId: emitTestDosPayloadEvent
+      message:
+        schemaFormat: 'application/vnd.apache.avro;version=1.9.0'
+        payload:
+          $ref: 'https://raw.githubusercontent.com/Brico87/event-gateway/main/test-payload.avsc'
