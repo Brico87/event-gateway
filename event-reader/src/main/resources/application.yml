@@ -1,6 +1,13 @@
 spring:
   application:
     name: event-reader
+  data:
+    redis:
+      database: 0
+      host: localhost
+      port: 6379
+      timeout: 60000
+      #password: mypass
 
 server:
   port: 8082

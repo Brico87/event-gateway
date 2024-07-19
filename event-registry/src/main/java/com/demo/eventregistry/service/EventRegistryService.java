@@ -1,5 +1,7 @@
 package com.demo.eventregistry.service;
 
+import com.demo.eventregistry.model.EventSourceModel;
+import com.demo.eventregistry.repository.EventRegistryRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -16,6 +18,7 @@ import io.apicurio.registry.rest.v2.beans.IfExists;
 import io.confluent.kafka.schemaregistry.avro.AvroSchema;
 import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
 import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -51,16 +54,19 @@ public class EventRegistryService {
     private final Admin kafkaAdminClient;
     private final SchemaRegistryClient schemaRegistryClient;
     private final RegistryClient apicurioRegistryClient;
+    private final EventRegistryRepository eventRegistryRepository;
     private final String apicurioArtefactGroupId;
 
     @Autowired
     public EventRegistryService(Admin kafkaAdminClient,
                                 SchemaRegistryClient schemaRegistryClient,
                                 RegistryClient apicurioRegistryClient,
+                                EventRegistryRepository eventRegistryRepository,
                                 @Value("${apicurio.artefact-group-id}") String apicurioArtefactGroupId) {
         this.kafkaAdminClient = kafkaAdminClient;
         this.schemaRegistryClient = schemaRegistryClient;
         this.apicurioRegistryClient = apicurioRegistryClient;
+        this.eventRegistryRepository = eventRegistryRepository;
         this.apicurioArtefactGroupId = apicurioArtefactGroupId;
     }
 
@@ -125,6 +131,10 @@ public class EventRegistryService {
 
         // PUBLISH ASYNCAPI CONTRACT
         publishAsyncApiContract(asyncApiDocument.getInfo().getTitle(), contractJson);
+    }
+
+    public List<EventSourceModel> getEventSources() {
+        return IterableUtils.toList(eventRegistryRepository.findAll());
     }
 
     // PRIVATE METHODS
@@ -216,17 +226,12 @@ public class EventRegistryService {
                     message.getPayload().has(ASYNCAPI_REMOTE_REFERENCE_TAG)) {
                 String remoteReference = message.getPayload().get(ASYNCAPI_REMOTE_REFERENCE_TAG).asText();
                 String schemaString = fetchRemoteSchemaReference(remoteReference);
-                registerAvroSchema(channel, schemaString);
+                AvroSchema avroSchema = registerAvroSchema(channel, schemaString);
+                saveEventTopicMapping(channel, avroSchema);
             } else {
                 throw new InvalidContractException("The message schema format for '" + channel + "' shall be 'application/vnd.apache.avro' and the payload shall be a remote reference");
             }
         }
-    }
-
-    private void registerAvroSchema(String channel, String schemaString) throws IOException, RestClientException {
-        AvroSchema parsedSchema = new AvroSchema(schemaString);
-        int schemaId = schemaRegistryClient.register(channel, parsedSchema);
-        LOGGER.info("Schema '{}' registered for subject '{}'", schemaId, channel);
     }
 
     private static String fetchRemoteSchemaReference(String remoteReference) throws InvalidContractException {
@@ -237,6 +242,19 @@ public class EventRegistryService {
         } catch (IOException e) {
             throw new InvalidContractException("Error while fetching remote reference: '" + remoteReference + "'", e);
         }
+    }
+
+    private AvroSchema registerAvroSchema(String channel, String schemaString) throws IOException, RestClientException {
+        AvroSchema parsedSchema = new AvroSchema(schemaString);
+        int schemaId = schemaRegistryClient.register(channel, parsedSchema);
+        LOGGER.info("Schema '{}' registered for subject '{}'", schemaId, channel);
+        return parsedSchema;
+    }
+
+    private void saveEventTopicMapping(String channel, AvroSchema avroSchema) {
+        String eventName = avroSchema.rawSchema().getName();
+        eventRegistryRepository.save(new EventSourceModel(eventName, channel));
+        LOGGER.info("Mapping '{}'/'{}' save in database", eventName, channel);
     }
 
     private void publishAsyncApiContract(String identifier, String json) {
