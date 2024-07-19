@@ -1,7 +1,13 @@
 package com.demo.eventregistry.configuration;
 
+import io.apicurio.registry.rest.client.RegistryClient;
+import io.apicurio.registry.rest.client.RegistryClientFactory;
+import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClient;
+import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Properties;
@@ -18,17 +24,20 @@ public class EventRegistryConfiguration {
     @Value("${apicurio.registry-url}")
     private String apicurioRegistryUrl;
 
-    public Properties getKafkaProperties() {
+    @Bean
+    public Admin kafkaAdminClient() {
         Properties properties = new Properties();
         properties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        return properties;
+        return Admin.create(properties);
     }
 
-    public String getSchemaRegistryUrl() {
-        return this.schemaRegistryUrl;
+    @Bean
+    public SchemaRegistryClient schemaRegistryClient() {
+        return new CachedSchemaRegistryClient(schemaRegistryUrl, 10);
     }
 
-    public String getApicurioRegistryUrl() {
-        return this.apicurioRegistryUrl;
+    @Bean
+    public RegistryClient apicurioRegistryClient() {
+        return RegistryClientFactory.create(apicurioRegistryUrl);
     }
 }

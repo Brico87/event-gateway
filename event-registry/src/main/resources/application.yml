@@ -11,6 +11,7 @@ kafka:
 
 apicurio:
   registry-url: http://localhost:8080/apis/registry/v2
+  artefact-group-id: "com.demo"
 
 logging:
   level:
