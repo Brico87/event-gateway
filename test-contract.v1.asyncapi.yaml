@@ -5,7 +5,8 @@ info:
   description: The API notifies you whenever a new test event is fired
 channels:
   my.event.super.topic:
-    publish:
+    subscribe:
+      operationId: emitTestPayloadEvent
       message:
         schemaFormat: 'application/vnd.apache.avro;version=1.9.0'
         payload:
