@@ -4,14 +4,14 @@ info:
   version: 1.0.0
   description: The API notifies you whenever a new test event is fired
 channels:
-  my.super.topic:
+  my.event.super.topic:
     subscribe:
       operationId: emitTestPayloadEvent
       message:
         schemaFormat: 'application/vnd.apache.avro;version=1.9.0'
         payload:
           $ref: 'https://raw.githubusercontent.com/Brico87/event-gateway/main/test-payload.avsc'
-  my.second.super.topic:
+  my.event.second.topic:
     subscribe:
       operationId: emitTestDosPayloadEvent
       message:

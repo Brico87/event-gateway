@@ -9,6 +9,9 @@ kafka:
   bootstrap-servers: localhost:9092
   schema-registry-url: http://localhost:8081
 
+apicurio:
+  registry-url: http://localhost:8080/apis/registry/v2
+
 logging:
   level:
     org:
