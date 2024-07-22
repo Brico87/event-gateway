@@ -1,0 +1,73 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+  - url: http://localhost:8084
+    description: Generated server url
+paths:
+  "/contract":
+    post:
+      tags:
+        - event-registry-controller
+      operationId: RegisterContract
+      requestBody:
+        content:
+          application/x-yaml:
+            schema:
+              type: string
+          application/text:
+            schema:
+              type: string
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: string
+  "/event":
+    get:
+      tags:
+        - event-registry-controller
+      operationId: getEventSources
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/EventSourceDto"
+  "/event/{eventName}":
+    get:
+      tags:
+        - event-registry-controller
+      operationId: getEventSource
+      parameters:
+        - name: eventName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: string
+components:
+  schemas:
+    EventSourceDto:
+      type: object
+      properties:
+        event:
+          type: string
+        topic:
+          type: string

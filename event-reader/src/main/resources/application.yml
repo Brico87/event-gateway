@@ -9,6 +9,12 @@ spring:
       timeout: 60000
       #password: mypass
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+
 server:
   port: 8082
 
@@ -24,3 +30,8 @@ logging:
     io:
       confluent:
         kafka: warn
+
+event-source:
+  remote:
+    enabled: true
+    url: http://localhost:8084

@@ -2,14 +2,15 @@ package com.demo.eventregistry.controller;
 
 import com.demo.eventregistry.model.EventSourceModel;
 import com.demo.eventregistry.service.EventRegistryService;
+import com.google.common.net.HttpHeaders;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,10 +20,21 @@ public class EventRegistryController {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventRegistryController.class);
 
     private final EventRegistryService eventRegistryService;
+    private final String landingUrl;
 
     @Autowired
-    public EventRegistryController(EventRegistryService eventRegistryService) {
+    public EventRegistryController(EventRegistryService eventRegistryService,
+                                   @Value("${springdoc.swagger-ui.path}") String landingUrl) {
         this.eventRegistryService = eventRegistryService;
+        this.landingUrl = landingUrl;
+    }
+
+    @Hidden
+    @GetMapping("/")
+    public ResponseEntity<Void> redirectLandingUrl() {
+        return ResponseEntity.status(HttpStatus.PERMANENT_REDIRECT)
+                .header(HttpHeaders.LOCATION, landingUrl)
+                .build();
     }
 
     @PostMapping(value = "/contract", consumes = "application/text")
@@ -65,6 +77,16 @@ public class EventRegistryController {
             return ResponseEntity.ok(sources);
         } catch (Exception e) {
             LOGGER.error("Error while getting all event sources", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/event/{eventName}")
+    public ResponseEntity<String> getEventSource(@PathVariable String eventName) {
+        try {
+            return ResponseEntity.of(eventRegistryService.getEventSource(eventName));
+        } catch (Exception e) {
+            LOGGER.error("Error while getting event source for '{}'", eventName, e);
             return ResponseEntity.internalServerError().build();
         }
     }

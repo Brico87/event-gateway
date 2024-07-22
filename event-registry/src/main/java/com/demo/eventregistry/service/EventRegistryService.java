@@ -137,6 +137,11 @@ public class EventRegistryService {
         return IterableUtils.toList(eventRegistryRepository.findAll());
     }
 
+    public Optional<String> getEventSource(String eventName) {
+        return eventRegistryRepository.findById(eventName)
+                .map(EventSourceModel::topic);
+    }
+
     // PRIVATE METHODS
 
     private static String fetchRemoteContract(String url) throws InvalidContractException {

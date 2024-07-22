@@ -14,10 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -54,7 +51,13 @@ public class EventReaderService {
 
     private static void configureKafkaConsumer(KafkaConsumer<String, GenericRecord> kafkaConsumer, String topic, Long timestamp) {
         if (timestamp != null && timestamp < System.currentTimeMillis()) {
-            configureKafkaConsumerUsingTimestamp(kafkaConsumer, topic, timestamp);
+            try {
+                configureKafkaConsumerUsingTimestamp(kafkaConsumer, topic, timestamp);
+            } catch (Exception e) {
+                kafkaConsumer.unsubscribe();
+                LOGGER.warn("Error while configuring kafka consumer using timestamp / Switching to subscribe mode", e);
+                kafkaConsumer.subscribe(List.of(topic));
+            }
         } else {
             kafkaConsumer.subscribe(List.of(topic));
         }
@@ -74,6 +77,11 @@ public class EventReaderService {
         Map<TopicPartition, Long> partitionTimestampMap = topicPartitionList.stream()
                 .collect(Collectors.toMap(tp -> tp, tp -> timestamp));
         Map<TopicPartition, OffsetAndTimestamp> partitionOffsetMap = kafkaConsumer.offsetsForTimes(partitionTimestampMap);
+        for (OffsetAndTimestamp offset : partitionOffsetMap.values()) {
+            if (Objects.isNull(offset)) {
+                throw new IllegalStateException("Fetched OffsetAndTimestamp object is null for timestamp '" + timestamp + "'");
+            }
+        }
         // Force the consumer to seek for those offsets
         partitionOffsetMap.forEach((tp, offsetAndTimestamp) -> kafkaConsumer.seek(tp, offsetAndTimestamp.offset()));
     }

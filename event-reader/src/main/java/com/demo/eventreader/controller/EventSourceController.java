@@ -1,8 +1,7 @@
 package com.demo.eventreader.controller;
 
 import com.demo.eventreader.model.EventSourceModel;
-import com.demo.eventreader.repository.EventSourceRepository;
-import org.apache.commons.collections4.IterableUtils;
+import com.demo.eventreader.service.EventSourceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,18 +20,17 @@ public class EventSourceController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventSourceController.class);
 
-    private final EventSourceRepository eventSourceRepository;
+    private final EventSourceService eventSourceService;
 
     @Autowired
-    public EventSourceController(EventSourceRepository eventSourceRepository) {
-        this.eventSourceRepository = eventSourceRepository;
+    public EventSourceController(EventSourceService eventSourceService) {
+        this.eventSourceService = eventSourceService;
     }
 
     @GetMapping("/register")
     public ResponseEntity<List<EventSourceModel>> getSources() {
         try {
-            List<EventSourceModel> sources = IterableUtils.toList(this.eventSourceRepository.findAll());
-            return ResponseEntity.ok(sources);
+            return ResponseEntity.ok(eventSourceService.getEventSources());
         } catch (Exception e) {
             LOGGER.error("Error while getting all event sources", e);
             return ResponseEntity.internalServerError().build();
@@ -42,7 +40,7 @@ public class EventSourceController {
     @PostMapping("/register")
     public ResponseEntity<EventSourceModel> registerSource(@RequestBody EventSourceRegisterRequest registerRequest) {
         try {
-            EventSourceModel saved = this.eventSourceRepository.save(new EventSourceModel(registerRequest.event, registerRequest.topic));
+            EventSourceModel saved = eventSourceService.saveEventSource(registerRequest.event, registerRequest.topic);
             return ResponseEntity.ok(saved);
         } catch (Exception e) {
             LOGGER.error("Error while registering source '{}' for event '{}'", registerRequest.topic, registerRequest.event, e);
