@@ -27,3 +27,5 @@ spec:
   system: eda
   definition:
     $text: https://github.com/Brico87/event-gateway/blob/main/event-catalog/test-contract.asyncapi.yaml
+  apiConsumedBy: 
+    - 'component:default/my-consumer'
