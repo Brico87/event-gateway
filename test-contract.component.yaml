@@ -1,0 +1,14 @@
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: test-contract
+  description: The test-contract AsyncAPI
+  tags:
+    - events
+    - contract
+spec:
+  type: asyncapi
+  lifecycle: production
+  owner: team-a
+  definition:
+    $text: https://raw.githubusercontent.com/Brico87/event-gateway/main/test-contract.v1.asyncapi.yaml
