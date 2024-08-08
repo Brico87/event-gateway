@@ -25,4 +25,4 @@ spec:
   owner: team-a
   system: eda
   definition:
-    $text: https://github.com/Brico87/event-gateway/event-catalog/blob/main/test-contract.asyncapi.yaml
+    $text: https://github.com/Brico87/event-gateway/blob/main/event-catalog/test-contract.asyncapi.yaml
