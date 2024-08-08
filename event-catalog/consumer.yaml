@@ -1,0 +1,11 @@
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-component
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: my-consumer
+spec:
+  type: event-consumer
+  lifecycle: experimental
+  owner: team-b
+  system: eda
+  consumesApi: [test-contract-api]

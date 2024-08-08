@@ -1,0 +1,28 @@
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-component
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: my-producer
+spec:
+  type: event-producer
+  lifecycle: experimental
+  owner: team-a
+  system: eda
+  providesApis: [test-contract-api]
+---
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-api
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: test-contract-api
+  description: The test-contract event API
+  tags:
+    - events
+    - test-contract
+spec:
+  type: asyncapi
+  lifecycle: experimental
+  owner: team-a
+  system: eda
+  definition:
+    $text: https://github.com/Brico87/event-gateway/event-catalog/blob/main/test-contract.asyncapi.yaml
