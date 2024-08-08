@@ -11,7 +11,7 @@ spec:
   providesApis:
     - test-contract-api
   apiConsumedBy: 
-    - 'component:my-consumer'
+    - 'component:default/my-consumer'
 ---
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-api
 apiVersion: backstage.io/v1alpha1
