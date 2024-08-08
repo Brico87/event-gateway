@@ -11,4 +11,4 @@ spec:
   lifecycle: production
   owner: team-a
   definition:
-    $text: https://raw.githubusercontent.com/Brico87/event-gateway/main/test-contract.v1.asyncapi.yaml
+    $text: https://github.com/Brico87/event-gateway/blob/main/test-contract.client.asyncapi.yaml
