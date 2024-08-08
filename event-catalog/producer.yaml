@@ -10,6 +10,8 @@ spec:
   system: eda
   providesApis:
     - test-contract-api
+  apiConsumedBy: 
+    - 'component:my-consumer'
 ---
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-api
 apiVersion: backstage.io/v1alpha1
@@ -27,4 +29,3 @@ spec:
   system: eda
   definition:
     $text: https://github.com/Brico87/event-gateway/blob/main/event-catalog/test-contract.asyncapi.yaml
-  apiConsumedBy: ['component:my-consumer']
