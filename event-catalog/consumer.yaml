@@ -8,3 +8,4 @@ spec:
   lifecycle: experimental
   owner: team-b
   system: eda
+  consumesApis: [test-contract-api]
