@@ -14,5 +14,6 @@
 		<module>event-reader</module>
 		<module>event-fanout</module>
         <module>event-registry</module>
+		<module>event-backpressure-sink</module>
     </modules>
 </project>

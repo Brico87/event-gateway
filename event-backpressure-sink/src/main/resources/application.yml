@@ -1,0 +1,26 @@
+logging:
+  level:
+    root: INFO
+
+spring:
+  application:
+    name: event-backpressure-sink
+  data:
+    redis:
+      database: 0
+      host: localhost
+      port: 16379
+      password: mypass
+      timeout: 60000
+
+server:
+  port: 8082
+
+kafka:
+  bootstrap-servers: localhost:9092
+  schema-registry-url: http://localhost:8081
+
+application:
+  routing:
+    - source: my-topic
+      sink: my-stream
