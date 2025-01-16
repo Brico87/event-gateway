@@ -1,0 +1,17 @@
+logging:
+  level:
+    root: DEBUG
+
+spring:
+  application:
+    name: event-backpressure-dispatcher
+  data:
+    redis:
+      database: 0
+      host: localhost
+      port: 16379
+      password: mypass
+      timeout: 60000
+
+server:
+  port: 8083
