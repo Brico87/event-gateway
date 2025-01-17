@@ -1,0 +1,28 @@
+{
+  "users": {
+    "toto": {
+      "location": {
+        "region": "FR-OCC",
+        "department": "FR-31"
+      },
+      "permissions": [
+        {
+          "action": "read",
+          "resource": "my-stream"
+        }
+      ]
+    },
+    "titi": {
+      "location": {
+        "region": "FR-NAQ",
+        "department": "FR-64"
+      },
+      "permissions": [
+        {
+          "action": "write",
+          "resource": "my-stream"
+        }
+      ]
+    }
+  }
+}
