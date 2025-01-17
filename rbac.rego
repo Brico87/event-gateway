@@ -2,6 +2,6 @@ package app.rbac
 
 default allow = false
 
-#allow if {
-#    input.user == "toto"
-#}
+allow if {
+    input.user == "toto"
+}
