@@ -15,6 +15,11 @@ import java.util.Properties;
 @Configuration
 public class EventBackpressureSinkConfiguration {
 
+    // TODO: redis connection => https://redis.io/blog/multiplexing-explained/
+    // Open one connection and share it between threads
+    // https://redis.io/docs/latest/develop/clients/pools-and-muxing/
+    // To be read: https://redis.io/blog/youre-probably-thinking-about-redis-streams-wrong/
+
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
 

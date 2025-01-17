@@ -5,13 +5,18 @@ logging:
 spring:
   application:
     name: event-backpressure-dispatcher
-  data:
-    redis:
-      database: 0
-      host: localhost
-      port: 16379
-      password: mypass
-      timeout: 60000
 
 server:
   port: 8083
+
+redis:
+  # manual configuration due to pooling
+  database: 0
+  host: localhost
+  port: 16379
+  password: mypass
+  timeout: 60000
+  pooling:
+    min-idle: 10
+    max-idle: 100
+    max-total: 100
