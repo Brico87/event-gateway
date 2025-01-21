@@ -20,3 +20,6 @@ redis:
     min-idle: 10
     max-idle: 100
     max-total: 100
+
+policy-server:
+  base-url: http://localhost:8181

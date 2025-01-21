@@ -1,5 +1,6 @@
 package com.demo.eventbackpressuredispatcher.configuration;
 
+import com.demo.eventbackpressuredispatcher.opa.client.ApiClient;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -48,6 +49,9 @@ public class EventBackpressureDispatcherConfiguration {
     @Value("${redis.pooling.max-idle}")
     private int poolingMaxIdle;
 
+    @Value("${policy-server.base-url}")
+    private String policyServerBaseUrl;
+
     @Bean
     public RedisConfiguration redisConfiguration() {
         RedisStandaloneConfiguration redisConfig = new RedisStandaloneConfiguration(hostName, port);
@@ -91,5 +95,12 @@ public class EventBackpressureDispatcherConfiguration {
         template.setStringSerializer(new StringRedisSerializer());
         template.afterPropertiesSet();
         return template;
+    }
+
+    @Bean
+    public ApiClient policyServerApiClient() {
+        ApiClient apiClient = new ApiClient();
+        apiClient.setBasePath(policyServerBaseUrl);
+        return apiClient;
     }
 }

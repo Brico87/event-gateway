@@ -1,0 +1,171 @@
+# https://github.com/open-policy-agent/contrib/blob/main/open_api/openapi.yaml
+openapi: 3.0.3
+# servers:
+#  - url: 'http://localhost:8181'
+#    description: Docker
+info:
+  title: Open Policy Agent (OPA) REST client
+  version: 0.28.0
+externalDocs:
+  description: OPA documentation
+  url: 'https://www.openpolicyagent.org/docs/latest/'
+paths:
+  '/v1/data/app/rbac/allow':
+    post:
+      summary: Get access for a given input
+      description: |-
+        This API endpoint returns the document specified by `path`.
+
+        The server will return a *bad request* (400) response if either:
+        - The query requires an input document and you do not provide it
+        - You provide the input document but the query has already defined it.
+      operationId: getAccessForInput
+      requestBody:
+        description: The input document (in JSON format)
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/inputSchema'
+      responses:
+        '200':
+          $ref: '#/components/responses/successResult'
+        '400':
+          $ref: '#/components/responses/badRequestResponse'
+        '500':
+          $ref: '#/components/responses/serverErrorResponse'
+  /health:
+    get:
+      summary: Health
+      description: |-
+        This API endpoint verifies that the server is operational.
+
+        The response from the server is either 200 or 500:
+        - **200** - OPA service is healthy. If `bundles` is true, then all configured bundles have been activated. If `plugins` is true, then all plugins are in an 'OK' state.
+        - **500** - OPA service is *not* healthy. If `bundles` is true, at least one of configured bundles has not yet been activated. If `plugins` is true, at least one plugins is in a 'not OK' state.
+
+        ---
+        **Note**
+        This check is only for initial bundle activation. Subsequent downloads will not affect the health check.
+
+        Use the **status** endpoint (in the (management API)[management.html]) for more fine-grained bundle status monitoring.
+
+        ---
+      externalDocs:
+        description: Bundles
+        url: 'https://www.openpolicyagent.org/docs/latest/management/#bundles'
+      operationId: getServerHealth
+      responses:
+        '200':
+          description: OPA service is healthy
+        '500':
+          description: OPA service is not healthy
+components:
+  responses:
+    successResult:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/resultResponse'
+    notFoundResponse:
+      description: Not found (for example, a requested policy module or document does not exist)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/404'
+    badRequestResponse:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/400'
+    serverErrorResponse:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/400'
+  schemas:
+    '400':
+      type: object
+      properties:
+        code:
+          description: The error code name
+          example: invalid_parameter
+          type: string
+          minLength: 1
+        message:
+          description: The description of the error
+          type: string
+          minLength: 1
+          example: error(s) occurred while compiling module(s)
+        errors:
+          description: 'Errors that may have been generated during the parse, compile, or installation of a policy module'
+          type: array
+          uniqueItems: true
+          items:
+            properties:
+              code:
+                description: The error code name
+                type: string
+                minLength: 1
+                example: rego_unsafe_var_error
+              message:
+                description: A general description of the error
+                type: string
+                minLength: 1
+                example: var x is unsafe
+              location:
+                description: Where the error occurred
+                type: object
+                properties:
+                  file:
+                    description: The policy module name that generated the error
+                    type: string
+                    example: example1
+                  row:
+                    description: The line number in the policy module where the error occurred
+                    type: number
+                    example: 3
+                  col:
+                    description: The column in the policy module where the error occurred
+                    type: number
+                    example: 1
+      required:
+        - code
+        - message
+    '404':
+      type: object
+      properties:
+        code:
+          description: The error code name
+          example: resource_not_found
+          type: string
+          minLength: 1
+        message:
+          description: The description of the error (including the name of any undefined policy module)
+          example: 'storage_not_found_error: policy id partial'
+          type: string
+          minLength: 1
+      required:
+        - code
+        - message
+    inputSchema:
+      type: object
+      example: |-
+        {
+          "input": {
+           "example": {
+             "flag": true
+             }
+           }
+         }
+      additionalProperties: {}
+    resultResponse:
+      type: object
+      properties:
+        result:
+          type: boolean
+  securitySchemes: {}
+security: []

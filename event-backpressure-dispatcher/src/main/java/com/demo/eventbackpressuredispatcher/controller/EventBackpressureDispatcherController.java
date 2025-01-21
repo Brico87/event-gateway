@@ -1,6 +1,5 @@
 package com.demo.eventbackpressuredispatcher.controller;
 
-import com.demo.eventbackpressuredispatcher.model.EventData;
 import com.demo.eventbackpressuredispatcher.service.EventBackpressureSourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +8,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 public class EventBackpressureDispatcherController {
@@ -22,7 +22,7 @@ public class EventBackpressureDispatcherController {
 
     @GetMapping("/event")
     @ResponseBody
-    public List<EventData> readEvents(@RequestParam String consumer, @RequestParam int count) {
+    public List<Map<String, Object>> readEvents(@RequestParam String consumer, @RequestParam int count) {
         return sourceService.read("my-stream", count, consumer);
     }
 }
