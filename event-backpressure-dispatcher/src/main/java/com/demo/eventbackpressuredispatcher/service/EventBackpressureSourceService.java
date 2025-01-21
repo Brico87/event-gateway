@@ -1,5 +1,6 @@
 package com.demo.eventbackpressuredispatcher.service;
 
+import com.demo.eventbackpressuredispatcher.model.AccessRequestData;
 import com.demo.eventbackpressuredispatcher.model.EventData;
 import com.demo.eventbackpressuredispatcher.service.opa.EventPolicyCheckerService;
 import com.demo.eventbackpressuredispatcher.service.redis.EventRedisSourceService;
@@ -46,7 +47,11 @@ public class EventBackpressureSourceService {
 
     private boolean applyPolicy(String source, String consumerName, EventData eventData) {
         try {
-            boolean accessAllowed = policyCheckerService.checkEventDataAccess(consumerName);
+            // Simulate location info fetched from event data (like user info)
+            AccessRequestData accessRequestData = simulateAccessRequestData(source, consumerName, eventData);
+
+            // Check access
+            boolean accessAllowed = policyCheckerService.checkEventDataAccess(accessRequestData);
             LOGGER.info("Source {} / event {} access for {}: {}", source, eventData.id(), consumerName, accessAllowed ? "allowed" : "not allowed");
             sourceService.acknowledge(source, consumerName, eventData.id());
             return accessAllowed;
@@ -54,5 +59,19 @@ public class EventBackpressureSourceService {
             LOGGER.error("Error while applying policy for event ID {} for {}", eventData.id(), consumerName, e);
             return false;
         }
+    }
+
+    private static AccessRequestData simulateAccessRequestData(String source, String consumerName, EventData eventData) {
+        int targetId = (int) eventData.payload().get("targetId");
+        String region;
+        String department;
+        if (targetId == 1) {
+            region = "FR-OCC";
+            department = "FR-31";
+        } else {
+            region = "FR-NAQ";
+            department = "FR-64";
+        }
+        return new AccessRequestData(consumerName, source, region, department);
     }
 }

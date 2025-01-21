@@ -1,5 +1,6 @@
 package com.demo.eventbackpressuredispatcher.controller;
 
+import com.demo.eventbackpressuredispatcher.model.AccessRequestData;
 import com.demo.eventbackpressuredispatcher.service.EventBackpressureSourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

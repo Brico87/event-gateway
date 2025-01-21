@@ -1,5 +1,6 @@
 package com.demo.eventbackpressuredispatcher.service.opa;
 
+import com.demo.eventbackpressuredispatcher.model.AccessRequestData;
 import com.demo.eventbackpressuredispatcher.opa.api.DefaultApi;
 import com.demo.eventbackpressuredispatcher.opa.client.ApiClient;
 import com.demo.eventbackpressuredispatcher.opa.model.ResultResponse;
@@ -24,10 +25,14 @@ public class EventPolicyCheckerService {
         this.policyServerApi = new DefaultApi(policyServerApiClient);
     }
 
-    public boolean checkEventDataAccess(String consumerName) {
+    // RBAC rules: https://github.com/Brico87/event-gateway/blob/main/rbac.rego
+    public boolean checkEventDataAccess(AccessRequestData accessRequestData) {
         Map<String, Object> inputParams = new HashMap<>();
         Map<String, Object> accessParams = new HashMap<>();
-        accessParams.put("user", consumerName);
+        accessParams.put("user", accessRequestData.consumerName());
+        accessParams.put("resource", accessRequestData.resource());
+        accessParams.put("region", accessRequestData.region());
+        accessParams.put("department", accessRequestData.department());
         inputParams.put("input", accessParams);
         ResultResponse response = policyServerApi.getAccessForInput(inputParams);
         return Optional.ofNullable(response.getResult()).orElse(false);
