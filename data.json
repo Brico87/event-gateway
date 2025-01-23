@@ -1,6 +1,6 @@
 {
-  "users": {
-    "toto": {
+  "partners": {
+    "partner-consumer-occ-31": {
       "location": {
         "region": "FR-OCC",
         "department": "FR-31"
@@ -12,14 +12,26 @@
         }
       ]
     },
-    "titi": {
+    "partner-producer-occ-31": {
+      "location": {
+        "region": "FR-OCC",
+        "department": "FR-31"
+      },
+      "permissions": [
+        {
+          "action": "write",
+          "resource": "my-stream"
+        }
+      ]
+    },
+    "partner-consumer-naq-64": {
       "location": {
         "region": "FR-NAQ",
         "department": "FR-64"
       },
       "permissions": [
         {
-          "action": "write",
+          "action": "read",
           "resource": "my-stream"
         }
       ]
