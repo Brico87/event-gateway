@@ -2,8 +2,10 @@ package com.demo.eventbackpressuredispatcher.service;
 
 import com.demo.eventbackpressuredispatcher.model.AccessRequestData;
 import com.demo.eventbackpressuredispatcher.model.EventData;
+import com.demo.eventbackpressuredispatcher.model.UserInfo;
 import com.demo.eventbackpressuredispatcher.service.opa.EventPolicyCheckerService;
 import com.demo.eventbackpressuredispatcher.service.redis.EventRedisSourceService;
+import com.demo.eventbackpressuredispatcher.service.user.EventUserInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +23,15 @@ public class EventBackpressureSourceService {
 
     private final EventRedisSourceService sourceService;
     private final EventPolicyCheckerService policyCheckerService;
+    private final EventUserInfoService userInfoService;
 
     @Autowired
     public EventBackpressureSourceService(EventRedisSourceService sourceService,
-                                          EventPolicyCheckerService policyCheckerService) {
+                                          EventPolicyCheckerService policyCheckerService,
+                                          EventUserInfoService userInfoService) {
         this.sourceService = sourceService;
         this.policyCheckerService = policyCheckerService;
+        this.userInfoService = userInfoService;
     }
 
     public List<Map<String, Object>> read(String source, int count, String consumerName) {
@@ -47,10 +52,7 @@ public class EventBackpressureSourceService {
 
     private boolean applyPolicy(String source, String consumerName, EventData eventData) {
         try {
-            // Simulate location info fetched from event data (like user info)
-            AccessRequestData accessRequestData = simulateAccessRequestData(source, consumerName, eventData);
-
-            // Check access
+            AccessRequestData accessRequestData = buildAccessRequestData(source, consumerName, eventData);
             boolean accessAllowed = policyCheckerService.checkEventDataAccess(accessRequestData);
             LOGGER.info("Source {} / event {} access for {}: {}", source, eventData.id(), consumerName, accessAllowed ? "allowed" : "not allowed");
             sourceService.acknowledge(source, consumerName, eventData.id());
@@ -61,17 +63,10 @@ public class EventBackpressureSourceService {
         }
     }
 
-    private static AccessRequestData simulateAccessRequestData(String source, String consumerName, EventData eventData) {
-        int targetId = (int) eventData.payload().get("targetId");
-        String region;
-        String department;
-        if (targetId == 1) {
-            region = "FR-OCC";
-            department = "FR-31";
-        } else {
-            region = "FR-NAQ";
-            department = "FR-64";
-        }
-        return new AccessRequestData(consumerName, source, region, department);
+    private AccessRequestData buildAccessRequestData(String source, String consumerName, EventData eventData) {
+        int userId = (int) eventData.payload().get("userId");
+        UserInfo userInfo = userInfoService.fetchUserInfo(userId);
+        LOGGER.info("Source {} / event {} linked to user: {}", source, eventData.id(), userInfo);
+        return new AccessRequestData(consumerName, source, userInfo);
     }
 }

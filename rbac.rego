@@ -22,6 +22,6 @@ partner_is_allowed if {
 	# input.partner == "toto"
 
 	partner_location := data.partners[input.partner].location
-	partner_location.region == input.region
-	partner_location.department == input.department
+	partner_location.region == input.user.region
+	partner_location.department == input.user.department
 }

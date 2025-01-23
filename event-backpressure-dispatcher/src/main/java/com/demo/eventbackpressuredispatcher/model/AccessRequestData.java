@@ -1,3 +1,3 @@
 package com.demo.eventbackpressuredispatcher.model;
 
-public record AccessRequestData(String consumerName, String resource, String region, String department) {}
+public record AccessRequestData(String consumer, String resource, UserInfo userInfo) {}

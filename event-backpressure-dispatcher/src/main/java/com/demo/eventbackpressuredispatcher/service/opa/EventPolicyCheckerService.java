@@ -27,14 +27,20 @@ public class EventPolicyCheckerService {
 
     // RBAC rules: https://github.com/Brico87/event-gateway/blob/main/rbac.rego
     public boolean checkEventDataAccess(AccessRequestData accessRequestData) {
-        Map<String, Object> inputParams = new HashMap<>();
+        Map<String, Object> userInfoParams = new HashMap<>();
+        userInfoParams.put("region", accessRequestData.userInfo().region());
+        userInfoParams.put("department", accessRequestData.userInfo().department());
+
         Map<String, Object> accessParams = new HashMap<>();
-        accessParams.put("user", accessRequestData.consumerName());
+        accessParams.put("partner", accessRequestData.consumer());
         accessParams.put("resource", accessRequestData.resource());
-        accessParams.put("region", accessRequestData.region());
-        accessParams.put("department", accessRequestData.department());
+        accessParams.put("user", userInfoParams);
+
+        Map<String, Object> inputParams = new HashMap<>();
         inputParams.put("input", accessParams);
+
         ResultResponse response = policyServerApi.getAccessForInput(inputParams);
+
         return Optional.ofNullable(response.getResult()).orElse(false);
     }
 
